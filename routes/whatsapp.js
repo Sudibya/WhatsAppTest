@@ -3,7 +3,7 @@ const router = express.Router();
 const axios = require('axios');
 
 router.post('/send-template', async (req, res) => {
-    const { phoneNumber, templateName, languageCode, parameters, buttons } = req.body;
+    const { phoneNumber, templateName, languageCode, parameters, buttons, imageUrl } = req.body;
 
     if (!phoneNumber || !templateName || !languageCode) {
         return res.status(400).json({ message: 'Phone number, template name, and language code are required' });
@@ -15,6 +15,20 @@ router.post('/send-template', async (req, res) => {
 
         const components = [];
 
+        // Handling header image
+        if (imageUrl) {
+            components.push({
+                type: "header",
+                parameters: [
+                    {
+                        type: "image",
+                        image: { link: imageUrl }
+                    }
+                ]
+            });
+        }
+
+        // Handling body text parameters
         if (parameters && parameters.length > 0) {
             components.push({
                 type: "body",
@@ -25,6 +39,7 @@ router.post('/send-template', async (req, res) => {
             });
         }
 
+        // Handling buttons
         if (buttons && buttons.length > 0) {
             buttons.forEach((button, index) => {
                 if (button.type === "quick_reply") {
